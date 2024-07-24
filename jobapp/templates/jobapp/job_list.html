@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Job List{% endblock %}
+
+{% block content %}
+    <h1>Job List</h1>
+
+    <!-- Search form -->
+    <form method="get" action="">
+        <div class="form-group">
+            <input type="text" class="form-control" name="q" placeholder="Search" value="{{ request.GET.q }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <!-- Job table -->
+    <div class="mt-4 table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Job ID</th>
+                    <th>Device Name</th>
+                    <th>Device IP</th>
+                    <th>Spare Name</th>
+                    <th>Spare IP</th>
+                    <th>Created</th>
+                    <th>Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in jobs %}
+                <tr>
+                    <td><a href="{% url 'jobapp:joblog_list' job.job_id %}">{{ job.job_id }}</a></td>
+                    <td>{{ job.device_name }}</td>
+                    <td>{{ job.device_ip }}</td>
+                    <td>{{ job.spare_name }}</td>
+                    <td>{{ job.spare_ip }}</td>
+                    <td>{{ job.created }}</td>
+                    <td>{{ job.last_updated }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">No jobs found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-4">
+        <div class="pagination">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if num == page_obj.number %}
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    </div>
+{% endblock %}

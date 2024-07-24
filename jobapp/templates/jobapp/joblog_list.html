@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Job Logs{% endblock %}
+
+{% block content %}
+    <h2>Job Logs for Job ID: {{ job_id }}</h2>
+
+    <!-- Job Log table -->
+    <div class="mt-4 table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Message</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in joblogs %}
+                <tr>
+                    <td>{{ log.message }}</td>
+                    <td>{{ log.created|date:"Y-m-d H:i:s" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2">No logs found for this job.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-4">
+        <div class="pagination">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if num == page_obj.number %}
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    </div>
+
+    <!-- Link back to job list -->
+    <div class="mt-4">
+        <a class="btn btn-secondary" href="{% url 'jobs:job_list' %}">Back to Job List</a>
+    </div>
+{% endblock %}
