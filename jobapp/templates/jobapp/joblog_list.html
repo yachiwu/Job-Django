@@ -3,8 +3,29 @@
 {% block title %}Job Logs{% endblock %}
 
 {% block content %}
-    <h2>Job Logs for Job ID: {{ job_id }}</h2>
-
+    <h2>Job Logs for Job ID: {{ job.job_id }}</h2>
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <h6>Device Name : {{ job.device_name }}</h6> 
+                </div>
+                <div class="col-md-3">
+                    <h6>Device IP :  {{ job.device_ip }}</h6>
+                </div>
+                <div class="col-md-3">
+                    <h6>Spare Name : {{ job.spare_name }}</h6> 
+                </div>
+                <div class="col-md-3">
+                    <h6>Spare IP : {{ job.spare_ip }}</h6> 
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Link back to job list -->
+    <div class="mt-4">
+        <a class="btn btn-secondary" href="{% url 'jobs:job_list' %}">Back to Job List</a>
+    </div>
     <!-- Job Log table -->
     <div class="mt-4 table-responsive">
         <table class="table table-striped">
@@ -74,9 +95,6 @@
         <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
     </div>
 
-    <!-- Link back to job list -->
-    <div class="mt-4">
-        <a class="btn btn-secondary" href="{% url 'jobs:job_list' %}">Back to Job List</a>
-    </div>
+
 {% endblock %}
 
