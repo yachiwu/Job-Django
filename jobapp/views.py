@@ -1,9 +1,7 @@
 from datetime import datetime, date, time
-from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
-from django.views.generic import ListView
-from .models import Job, JobLog
+from django.shortcuts import get_object_or_404
+from django.views.generic import ListView,DetailView
+from .models import Job, JobLog, Device
 from django.db.models import Q
 from django.utils.dateparse import parse_date
 from django.utils.timezone import make_aware, get_current_timezone
@@ -79,6 +77,18 @@ class JobListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         queryset = self.get_queryset()
+        
+        # Create a dictionary to store the device IDs
+        device_ids = {}
+        spare_device_ids = {}
+        for job in queryset:
+            device = Device.objects.filter(name=job.device_name).first()
+            spare_device = Device.objects.filter(name=job.spare_name).first()
+            device_ids[job.job_id] = device.id if device else None
+            spare_device_ids[job.job_id] = spare_device.id if spare_device else None
+        context['device_ids'] = device_ids
+        context['spare_device_ids'] = spare_device_ids
+        
         context['paginate_by'] = self.get_paginate_by(self.get_queryset())
         context['search_query'] = self.request.GET.get('search', '')
         # set default last_updated_query to today
@@ -113,3 +123,10 @@ class JobLogListView(ListView):
         except (TypeError, ValueError):
             return self.paginate_by
 
+class DeviceDetailView(DetailView):
+    model = Device
+    template_name = 'jobapp/device_detail.html'
+    context_object_name = 'device'
+    # default is used pk , change to use id feild
+    def get_object(self, queryset=None):
+        return get_object_or_404(Device, id=self.kwargs.get('id'))

@@ -15,3 +15,7 @@ class JobLog(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     message = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
+
+class Device(models.Model):
+    name = models.CharField(max_length=100)
+    ip_address = models.GenericIPAddressField()

@@ -1,5 +1,6 @@
-{% extends 'base.html' %}
 
+{% extends 'base.html' %}
+{% load dict_extras %}
 {% block title %}Job List{% endblock %}
 
 {% block content %}
@@ -39,7 +40,13 @@
                 {% for job in jobs %}
                 <tr>
                     <td><a href="{% url 'jobs:joblog_list' job.job_id %}">{{ job.job_id }}</a></td>
-                    <td>{{ job.device_name }}</td>
+                    <td>
+                        {% if device_ids|get_item:job.job_id %}
+                        <a href="{% url 'jobs:device_detail' device_ids|get_item:job.job_id %}">{{ job.device_name }}</a>
+                        {% else %}
+                            {{ job.device_name }}
+                        {% endif %}
+                    </td>
                     <td>{{ job.device_ip }}</td>
                     <td>{{ job.spare_name }}</td>
                     <td>{{ job.spare_ip }}</td>

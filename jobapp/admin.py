@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Job, JobLog
+from .models import Job, JobLog ,Device
 
 class JobLogInline(admin.TabularInline):
     model = JobLog
@@ -10,4 +10,9 @@ class JobAdmin(admin.ModelAdmin):
     search_fields = ('device_name', 'device_ip', 'spare_name', 'spare_ip', 'status')
     inlines = [JobLogInline]
 
+class DeviceAdmin(admin.ModelAdmin):
+    list_display=('name', 'ip_address')
+    search_fields = ('name', 'ip_address')
+
 admin.site.register(Job, JobAdmin)
+admin.site.register(Device,DeviceAdmin)
