@@ -79,15 +79,16 @@ class JobListView(ListView):
         queryset = self.get_queryset()
         
         # Create a dictionary to store the device IDs
-        device_ids = {}
-        spare_device_ids = {}
+        switchs_id = {}
         for job in queryset:
             device = Device.objects.filter(name=job.device_name).first()
             spare_device = Device.objects.filter(name=job.spare_name).first()
-            device_ids[job.job_id] = device.id if device else None
-            spare_device_ids[job.job_id] = spare_device.id if spare_device else None
-        context['device_ids'] = device_ids
-        context['spare_device_ids'] = spare_device_ids
+            switchs_id[job.job_id] = {
+                'device_id': device.id if device else None,
+                'spare_device_id': spare_device.id if spare_device else None
+            }
+    
+        context['switchs_id'] = switchs_id
         
         context['paginate_by'] = self.get_paginate_by(self.get_queryset())
         context['search_query'] = self.request.GET.get('search', '')

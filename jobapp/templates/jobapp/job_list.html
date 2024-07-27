@@ -41,14 +41,24 @@
                 <tr>
                     <td><a href="{% url 'jobs:joblog_list' job.job_id %}">{{ job.job_id }}</a></td>
                     <td>
-                        {% if device_ids|get_item:job.job_id %}
-                        <a href="{% url 'jobs:device_detail' device_ids|get_item:job.job_id %}">{{ job.device_name }}</a>
-                        {% else %}
-                            {{ job.device_name }}
-                        {% endif %}
+                        {% with switchs_id|get_item:job.job_id as switch_info %}
+                            {% if switch_info.device_id %}
+                                <a href="{% url 'jobs:device_detail' switch_info.device_id %}">{{ job.device_name }}</a>
+                            {% else %}
+                                {{ job.device_name }}
+                            {% endif %}
+                        {% endwith %}
                     </td>
                     <td>{{ job.device_ip }}</td>
-                    <td>{{ job.spare_name }}</td>
+                    <td>
+                        {% with switchs_id|get_item:job.job_id as switch_info %}
+                            {% if switch_info.spare_device_id %}
+                                <a href="{% url 'jobs:device_detail' id=switch_info.spare_device_id %}">{{ job.spare_name }}</a>
+                            {% else %}
+                                {{ job.spare_name }}
+                            {% endif %}
+                        {% endwith %}
+                    </td>
                     <td>{{ job.spare_ip }}</td>
                     <td>{{ job.created }}</td>
                     <td>{{ job.last_updated }}</td>
