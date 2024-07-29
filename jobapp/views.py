@@ -1,5 +1,7 @@
 from datetime import datetime, date, time
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
+from django.views import View
 from django.views.generic import ListView,DetailView
 from .models import Job, JobLog, Device
 from django.db.models import Q
@@ -131,3 +133,15 @@ class DeviceDetailView(DetailView):
     # default is used pk , change to use id feild
     def get_object(self, queryset=None):
         return get_object_or_404(Device, id=self.kwargs.get('id'))
+    
+class JobStatusUpdateView(View):
+    def post(self, request, *args, **kwargs):
+        job_id = kwargs.get('job_id')
+        job = get_object_or_404(Job, job_id=job_id)
+        job.status = 'complete'
+        job.save()
+        JobLog.objects.create(
+            job=job,
+            message=f"Job status changed to complete",
+        )
+        return redirect(reverse('jobs:job_list'))

@@ -32,8 +32,10 @@
                     <th>Device IP</th>
                     <th>Spare Name</th>
                     <th>Spare IP</th>
+                    <th>Status</th>
                     <th>Created</th>
                     <th>Last Updated</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -60,8 +62,20 @@
                         {% endwith %}
                     </td>
                     <td>{{ job.spare_ip }}</td>
+                    <td>{{ job.status }}</td>
                     <td>{{ job.created }}</td>
                     <td>{{ job.last_updated }}</td>
+                    <td> 
+                        {% if job.status != 'complete' %}
+                            <form method="post" action="{% url 'jobs:job_complete' job.job_id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Change to Done</button>
+                            </form>
+                        {% else %}   
+                            <button class="btn btn-light">Done</button>
+                        {% endif %}
+
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
