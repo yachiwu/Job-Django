@@ -1,5 +1,5 @@
 from datetime import datetime, date, time
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView,DetailView
@@ -7,6 +7,7 @@ from .models import Job, JobLog, Device
 from django.db.models import Q
 from django.utils.dateparse import parse_date
 from django.utils.timezone import make_aware, get_current_timezone
+from django.contrib import messages
 import pytz
 
 class JobListView(ListView):
@@ -135,6 +136,11 @@ class DeviceDetailView(DetailView):
         return get_object_or_404(Device, id=self.kwargs.get('id'))
     
 class JobStatusUpdateView(View):
+    def get(self, request, *args, **kwargs):
+        job_id = kwargs.get('job_id')
+        job = get_object_or_404(Job, job_id=job_id)
+        return render(request, 'jobapp/confirm_job_complete.html', {'job': job})
+    
     def post(self, request, *args, **kwargs):
         job_id = kwargs.get('job_id')
         job = get_object_or_404(Job, job_id=job_id)
@@ -142,6 +148,7 @@ class JobStatusUpdateView(View):
         job.save()
         JobLog.objects.create(
             job=job,
-            message=f"Job status changed to complete",
+            message="Job status changed to complete",
         )
+        messages.success(request, f"Job ID {job.job_id} status has been changed to 'Complete'.")
         return redirect(reverse('jobs:job_list'))
