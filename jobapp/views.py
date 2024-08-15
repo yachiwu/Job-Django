@@ -8,7 +8,9 @@ from django.db.models import Q
 from django.utils.dateparse import parse_date
 from django.utils.timezone import make_aware, get_current_timezone
 from django.contrib import messages
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import pytz
+from .service import fetch_location_data_from_api
 
 class JobListView(ListView):
     model = Job
@@ -152,3 +154,66 @@ class JobStatusUpdateView(View):
         )
         messages.success(request, f"Job ID {job.job_id} status has been changed to 'Complete'.")
         return redirect(reverse('jobs:job_list'))
+    
+class LocationListView(View):
+    template_name = 'external/location_list.html'
+    paginate_by = 20
+
+    def get(self, request, *args, **kwargs):
+        # Get the page number from the GET parameters
+        page_number = request.GET.get('page', 1)
+        page_number = int(page_number)
+        offset = (int(page_number) - 1) * self.paginate_by
+
+        # Build API URL with limit and offset
+        api_url = f'https://demo.nautobot.com/api/dcim/locations/?depth=1&limit={self.paginate_by}&offset={offset}'
+        api_token = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        
+        # Fetch data from the API using the extracted function
+        response_data = fetch_location_data_from_api(api_url, api_token, self.paginate_by, offset)
+
+        # Extract data from the API response
+        locations = response_data.get('results', [])
+        total_count = response_data['count']
+        next_page = response_data.get('next')
+        previous_page = response_data.get('previous')
+
+        # Calculate total pages
+        total_pages = (total_count + self.paginate_by - 1) // self.paginate_by
+
+        # Generate page range with ellipses
+        page_range = self.get_elided_page_range(page_number, total_pages)
+
+        context = {
+            'locations': locations,
+            'page_range': page_range,
+            'current_page': page_number,
+            'total_pages': total_pages,
+            'next_page': next_page,
+            'previous_page': previous_page,
+        }
+        return render(request, self.template_name, context)
+
+    def get_elided_page_range(self, current_page, total_pages, num_pages=5):
+        """
+        Generates a page range with ellipses for pagination, retaining the current page, previous and next 2 pages,
+        as well as the first and last pages.
+        """
+        # Calculate the range of pages to display
+        start = max(1, current_page - 2)
+        end = min(total_pages, current_page + 2)
+
+        # Ensure there are enough pages before the current page
+        if start > 2:
+            pages = [1, '...']
+            pages.extend(range(start, end + 1))
+        else:
+            pages = list(range(1, end + 1))
+        
+        # Ensure there are enough pages after the current page
+        if end < total_pages - 1:
+            pages.extend(['...', total_pages])
+        elif end < total_pages:
+            pages.append(total_pages)
+
+        return pages
