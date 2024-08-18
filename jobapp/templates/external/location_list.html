@@ -11,21 +11,30 @@
         {% endfor %}
     </ul>
 
+    <form method="get" action="" class="form-inline">
+        <label class="mr-2"  for="paginate_by">Items per page : </label>
+        <select name="paginate_by" id="paginate_by" class="form-control mr-2" onchange="this.form.submit()">
+            <option value="5" {% if paginate_by == 5 %}selected{% endif %}>5</option>
+            <option value="10" {% if paginate_by == 10 %}selected{% endif %}>10</option>
+            <option value="20" {% if paginate_by == 20 %}selected{% endif %}>20</option>
+        </select>
+    </form>
+    
     <ul class="pagination">
         {% if previous_page %}
-            <li class="page-item"><a class="page-link" href="?page={{ current_page|add:-1 }}">Previous</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ current_page|add:-1 }}&paginate_by={{ paginate_by }}">Previous</a></li>
         {% endif %}
         {% for page_num in page_range %}
             {% if page_num == '...' %}
                 <li class="page-item disabled"><span class="page-link">...</span></li>
             {% else %}
                 <li class="page-item {% if page_num == current_page %}active{% endif %}">
-                    <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                    <a class="page-link" href="?page={{ page_num }}&paginate_by={{ paginate_by }}">{{ page_num }}</a>
                 </li>
             {% endif %}
         {% endfor %}
         {% if next_page %}
-            <li class="page-item"><a class="page-link" href="?page={{ current_page|add:1 }}">Next</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ current_page|add:1 }}&paginate_by={{ paginate_by }}">Next</a></li>
         {% endif %}
     </ul>
 {% endblock %}

@@ -157,20 +157,23 @@ class JobStatusUpdateView(View):
     
 class LocationListView(View):
     template_name = 'external/location_list.html'
-    paginate_by = 20
+
+    def get_paginate_by(self, request):
+        """Retrieve the number of items per page from GET parameters, defaulting to 20."""
+        return int(request.GET.get('paginate_by', 20))
 
     def get(self, request, *args, **kwargs):
-        # Get the page number from the GET parameters
-        page_number = request.GET.get('page', 1)
-        page_number = int(page_number)
-        offset = (int(page_number) - 1) * self.paginate_by
+        # Get the page number and items per page
+        page_number = int(request.GET.get('page', 1))
+        paginate_by = self.get_paginate_by(request)
+        offset = (page_number - 1) * paginate_by
 
         # Build API URL with limit and offset
-        api_url = f'https://demo.nautobot.com/api/dcim/locations/?depth=1&limit={self.paginate_by}&offset={offset}'
+        api_url = f'https://demo.nautobot.com/api/dcim/locations/?depth=1&limit={paginate_by}&offset={offset}'
         api_token = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
         
-        # Fetch data from the API using the extracted function
-        response_data = fetch_location_data_from_api(api_url, api_token, self.paginate_by, offset)
+        # Fetch data from the API
+        response_data = fetch_location_data_from_api(api_url, api_token, paginate_by, offset)
 
         # Extract data from the API response
         locations = response_data.get('results', [])
@@ -179,7 +182,7 @@ class LocationListView(View):
         previous_page = response_data.get('previous')
 
         # Calculate total pages
-        total_pages = (total_count + self.paginate_by - 1) // self.paginate_by
+        total_pages = (total_count + paginate_by - 1) // paginate_by
 
         # Generate page range with ellipses
         page_range = self.get_elided_page_range(page_number, total_pages)
@@ -191,6 +194,7 @@ class LocationListView(View):
             'total_pages': total_pages,
             'next_page': next_page,
             'previous_page': previous_page,
+            'paginate_by': paginate_by,
         }
         return render(request, self.template_name, context)
 
@@ -203,14 +207,14 @@ class LocationListView(View):
         start = max(1, current_page - 2)
         end = min(total_pages, current_page + 2)
 
-        # Ensure there are enough pages before the current page
+        pages = []
+
         if start > 2:
-            pages = [1, '...']
+            pages.extend([1, '...'])
             pages.extend(range(start, end + 1))
         else:
-            pages = list(range(1, end + 1))
-        
-        # Ensure there are enough pages after the current page
+            pages.extend(range(1, end + 1))
+
         if end < total_pages - 1:
             pages.extend(['...', total_pages])
         elif end < total_pages:
