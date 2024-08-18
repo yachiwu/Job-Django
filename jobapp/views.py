@@ -168,12 +168,20 @@ class LocationListView(View):
         paginate_by = self.get_paginate_by(request)
         offset = (page_number - 1) * paginate_by
 
-        # Build API URL with limit and offset
-        api_url = f'https://demo.nautobot.com/api/dcim/locations/?depth=1&limit={paginate_by}&offset={offset}'
+
+        # Build API URL
+        api_url = 'https://demo.nautobot.com/api/dcim/locations/'
         api_token = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
         
-        # Fetch data from the API
-        response_data = fetch_location_data_from_api(api_url, api_token, paginate_by, offset)
+        # Construct query parameters
+        params = {
+            'depth': 1,
+            'limit': paginate_by,
+            'offset': offset,
+        }
+
+        # Fetch data from the API with dynamic parameters
+        response_data = fetch_location_data_from_api(api_url, api_token, **params)
 
         # Extract data from the API response
         locations = response_data.get('results', [])
